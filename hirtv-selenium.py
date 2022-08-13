@@ -28,28 +28,36 @@ saveArticleText = []
 saveLeadArticle = []
 saveArticleDate = []
 webPageName = 'Hir TV'
-pageIndex = 1
+pageIndex = 11
 
 while pageIndex <= numberOfPages:
     currentPage = getLink + str(pageIndex)
     driver.get(currentPage)
     hirTvArticles = driver.find_elements(By.CLASS_NAME, 'focuspoint')
+    print((len(hirTvArticles)))
     for i in range(len(hirTvArticles)):
         try:
+            WebDriverWait(driver, 50).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'focuspoint'))
+                )
             hirTvArticles = driver.find_elements(By.CLASS_NAME, 'focuspoint')
             driver.implicitly_wait(16)
             hirTvArticles[i].click()
             driver.implicitly_wait(3)
+            insideAnArticle = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.TAG_NAME, "article"))
+            )
             saveHeadlines.append(driver.find_element(By.CSS_SELECTOR, "h1").text)
             saveArticleText.append(driver.find_element(By.CLASS_NAME, 'article-content').text)
             saveLeadArticle.append(driver.find_element(By.CLASS_NAME, 'font-weight-bold.article-lead').text)
             saveArticleDate.append(driver.find_element(By.CLASS_NAME, 'small.article-date').text)
             driver.back()
             driver.implicitly_wait(3)
-            pageIndex+= 1
+            if 
         except IndexError:
             print('out of range inside loop')
             continue
+    pageIndex+= 1
 
 
 dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
