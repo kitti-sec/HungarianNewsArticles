@@ -7,6 +7,9 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
+from re import search
+import os.path
 
 
 
@@ -22,13 +25,14 @@ driver.implicitly_wait(3)
 
 
 #  20cikk van egy oldalon
+# TODO: DUPKLIKACIOK MIKOR GYORSAN LEMENT. TOBBSZOR MENNT LE SOROKAT
 
 saveHeadlines = []
 saveArticleText = []
 saveLeadArticle = []
 saveArticleDate = []
 webPageName = 'Hir TV'
-pageIndex = 11
+pageIndex = 51
 
 while pageIndex <= numberOfPages:
     currentPage = getLink + str(pageIndex)
@@ -37,30 +41,52 @@ while pageIndex <= numberOfPages:
     print((len(hirTvArticles)))
     for i in range(len(hirTvArticles)):
         try:
+            correctUrl = 'hirtv'
+            strUrl = driver.current_url
+            if search(correctUrl, strUrl):
+                pass
+            else:
+                print('It got redirected to a different webpage.')
+                driver.close()
+                continue
+
             WebDriverWait(driver, 50).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'focuspoint'))
                 )
             hirTvArticles = driver.find_elements(By.CLASS_NAME, 'focuspoint')
             driver.implicitly_wait(16)
-            hirTvArticles[i].click()
-            driver.implicitly_wait(3)
+            actions = ActionChains(driver)
+            actions.click(hirTvArticles[i])
+            actions.perform()
+            # hirTvArticles[i].click()
+            driver.implicitly_wait(5)
             insideAnArticle = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.TAG_NAME, "article"))
             )
-            saveHeadlines.append(driver.find_element(By.CSS_SELECTOR, "h1").text)
+            saveHeadlines.append(driver.find_element(By.TAG_NAME, "h1").text)
             saveArticleText.append(driver.find_element(By.CLASS_NAME, 'article-content').text)
             saveLeadArticle.append(driver.find_element(By.CLASS_NAME, 'font-weight-bold.article-lead').text)
             saveArticleDate.append(driver.find_element(By.CLASS_NAME, 'small.article-date').text)
             driver.back()
-            driver.implicitly_wait(3)
-            if 
+            driver.implicitly_wait(15)
+
+                
         except IndexError:
             print('out of range inside loop')
             continue
+        
     pageIndex+= 1
-
-
-dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
-df= pd.DataFrame(dict)
-df.to_csv('articlesfromhirtv.csv', index=False, encoding='utf-8-sig')
+    file_exists = os.path.exists('articlesfromhirtv.csv')
+    if file_exists:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfromhirtv.csv', mode='a', index=False, header=None, encoding='utf-8-sig')
+    else:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfromhirtv.csv', index=False, encoding='utf-8-sig')
+    
 driver.quit()
+
+
+
