@@ -29,7 +29,7 @@ driver.implicitly_wait(3)
 
 
 webPageName = 'Hir TV'
-pageIndex = 51
+pageIndex = 1
 
 while pageIndex <= numberOfPages:
     saveHeadlines = []

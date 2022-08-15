@@ -29,6 +29,7 @@ while pageIndex <= numberOfPages:
     saveArticleText = []
     saveLeadArticle = []
     saveArticleDate = []
+    saveLink = []
     currentPage = getLink + str(pageIndex)
     driver.get(currentPage)
     articles = driver.find_elements(By.XPATH, "//a[@class='article-link ng-star-inserted']")
@@ -54,15 +55,18 @@ while pageIndex <= numberOfPages:
         else:
             saveLeadArticle.append('none')
         saveArticleDate.append(driver.find_element(By.XPATH, "//div[@class='info-line']//div[@class='right']").text)
+
+        saveLink.append(driver.current_url)
+
         driver.back()
     pageIndex+= 1
     file_exists = os.path.exists('articlesfrommagyarnemzet' + getKeyword + '.csv')
     if file_exists:
-        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword, 'URL': saveLink}
         df= pd.DataFrame(dict)
         df.to_csv('articlesfrommagyarnemzet' + getKeyword + '.csv', index=False, header=None, encoding='utf-8-sig', mode='a')
     else:
-        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword,  'URL': saveLink}
         df= pd.DataFrame(dict)
         df.to_csv('articlesfrommagyarnemzet' + getKeyword + '.csv', index=False, encoding='utf-8-sig', mode='a')
 
