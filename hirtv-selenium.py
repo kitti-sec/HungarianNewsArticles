@@ -35,6 +35,10 @@ webPageName = 'Hir TV'
 pageIndex = 51
 
 while pageIndex <= numberOfPages:
+    saveHeadlines = []
+    saveArticleText = []
+    saveLeadArticle = []
+    saveArticleDate = []
     currentPage = getLink + str(pageIndex)
     driver.get(currentPage)
     hirTvArticles = driver.find_elements(By.CLASS_NAME, 'focuspoint')
@@ -54,12 +58,12 @@ while pageIndex <= numberOfPages:
                 EC.presence_of_element_located((By.CLASS_NAME, 'focuspoint'))
                 )
             hirTvArticles = driver.find_elements(By.CLASS_NAME, 'focuspoint')
-            driver.implicitly_wait(16)
-            actions = ActionChains(driver)
-            actions.click(hirTvArticles[i])
-            actions.perform()
-            # hirTvArticles[i].click()
-            driver.implicitly_wait(5)
+            driver.implicitly_wait(20)
+            # actions = ActionChains(driver)
+            # actions.click(hirTvArticles[i])
+            # actions.perform()
+            hirTvArticles[i].click()
+            driver.implicitly_wait(10)
             insideAnArticle = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.TAG_NAME, "article"))
             )
@@ -76,15 +80,9 @@ while pageIndex <= numberOfPages:
             continue
         
     pageIndex+= 1
-    file_exists = os.path.exists('articlesfromhirtv.csv')
-    if file_exists:
-        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
-        df= pd.DataFrame(dict)
-        df.to_csv('articlesfromhirtv.csv', mode='a', index=False, header=None, encoding='utf-8-sig')
-    else:
-        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
-        df= pd.DataFrame(dict)
-        df.to_csv('articlesfromhirtv.csv', index=False, encoding='utf-8-sig')
+    dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+    df= pd.DataFrame(dict)
+    df.to_csv('articlesfromhirtv.csv', mode='a', index=False, header=None, encoding='utf-8-sig')
     
 driver.quit()
 
