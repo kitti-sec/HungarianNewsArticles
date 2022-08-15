@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os.path
+from selenium.common.exceptions import NoSuchElementException
 
 getLink = input("Type in the Magyar Nemzet link without the current_page count number: ")
 numberOfPages = int(input("How many pages would you like to collect? "))
@@ -14,12 +15,8 @@ driver = webdriver.Chrome(executable_path='C:/Users/shiro/Downloads/chromedriver
 
 driver.get(getLink)
 
-# saveHeadlines = []
-# saveArticleText = []
-# saveLeadArticle = []
-# saveArticleDate = []
 webPageName = 'Magyar Nemzet'
-pageIndex = 1
+pageIndex = 124
 
 driver.implicitly_wait(3)
 driver.find_element(By.CSS_SELECTOR, "body > div.fc-consent-root > div.fc-dialog-container > div.fc-dialog.fc-choice-dialog > div.fc-footer-buttons-container > div.fc-footer-buttons > button.fc-button.fc-cta-consent.fc-primary-button").click()
@@ -32,34 +29,58 @@ while pageIndex <= numberOfPages:
     saveLink = []
     currentPage = getLink + str(pageIndex)
     driver.get(currentPage)
-    articles = driver.find_elements(By.XPATH, "//a[@class='article-link ng-star-inserted']")
-    for i in range(21):
-        # len(articles)
-        WebDriverWait(driver, 50).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'result-list'))
-        )
+    articles = driver.find_elements(By.CSS_SELECTOR, "body > app-root > app-base > app-search > div > div.search-feature > div.result-list > app-article-card > article > div.article-right.ng-star-inserted > a")
+    lengthofList = len(articles)
+    for i in range(lengthofList):
+        saveSearchPage = driver.current_url
+        try:
+
+            WebDriverWait(driver, 50).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'result-list'))
+            )
+            
+            articles = driver.find_elements(By.CSS_SELECTOR, "body > app-root > app-base > app-search > div > div.search-feature > div.result-list > app-article-card > article > div.article-right.ng-star-inserted > a")
+            articles[i].click()
+            driver.implicitly_wait(4)
+
+            # /// Handling Error 404 ///
+            # try:
+            #     e = driver.find_element(By.TAG_NAME,'app-404')
+            #     driver.get(saveSearchPage)
+            #     continue
+            # except NoSuchElementException:
+            #     pass
+            
         
-        articles = driver.find_elements(By.CSS_SELECTOR, "body > app-root > app-base > app-search > div > div.search-feature > div.result-list > app-article-card > article > div.article-right.ng-star-inserted > a")
-        articles[i].click()
-        driver.implicitly_wait(4)
-        saveHeadlines.append(driver.find_element(By.CLASS_NAME, "title").text)
+            handle404 = driver.find_element(By.CLASS_NAME, "title").text
+            if handle404 == 'A keresett oldal nem található.':
+                raise NoSuchElementException('404')
 
-        articleTextList = driver.find_elements(By.TAG_NAME, 'app-article-text')
-        for i in articleTextList:
-            articleTextCombined = ''
-            articleTextCombined = articleTextCombined + i.text
-        saveArticleText.append(articleTextCombined)
+            saveHeadlines.append(driver.find_element(By.CLASS_NAME, "title").text)
 
-        if driver.find_element(By.CLASS_NAME, 'mbm-subtitle'):
-            saveLeadArticle.append(driver.find_element(By.CLASS_NAME, 'mbm-subtitle').text)
-        else:
-            saveLeadArticle.append('none')
-        saveArticleDate.append(driver.find_element(By.XPATH, "//div[@class='info-line']//div[@class='right']").text)
+            # /// Add together different sections to one article ///
+            articleTextList = driver.find_elements(By.TAG_NAME, 'app-article-text')
+            for i in articleTextList:
+                articleTextCombined = ''
+                articleTextCombined = articleTextCombined + i.text
+            saveArticleText.append(articleTextCombined)
 
-        saveLink.append(driver.current_url)
+            if driver.find_element(By.CLASS_NAME, 'mbm-subtitle'):
+                saveLeadArticle.append(driver.find_element(By.CLASS_NAME, 'mbm-subtitle').text)
+            else:
+                saveLeadArticle.append('none')
+            saveArticleDate.append(driver.find_element(By.XPATH, "//div[@class='info-line']//div[@class='right']").text)
 
-        driver.back()
+            saveLink.append(driver.current_url)
+
+            driver.back()
+        except NoSuchElementException:
+            print("No such element exception")
+            driver.get(saveSearchPage)
+            continue
+
     pageIndex+= 1
+    # /// Save data to .csv, append after every page (21 articles)
     file_exists = os.path.exists('articlesfrommagyarnemzet' + getKeyword + '.csv')
     if file_exists:
         dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword, 'URL': saveLink}
