@@ -1,3 +1,4 @@
+from email.header import Header
 from selenium import webdriver
 import pandas as pd
 from selenium.webdriver.common.by import By
@@ -55,9 +56,15 @@ while pageIndex <= numberOfPages:
         saveArticleDate.append(driver.find_element(By.XPATH, "//div[@class='info-line']//div[@class='right']").text)
         driver.back()
     pageIndex+= 1
-    dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
-    df= pd.DataFrame(dict)
-    df.to_csv('articlesfrommagyarnemzet' + getKeyword + '.csv', index=False, encoding='utf-8-sig', mode='a')
+    file_exists = os.path.exists('articlesfrommagyarnemzet' + getKeyword + '.csv')
+    if file_exists:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfrommagyarnemzet' + getKeyword + '.csv', index=False, header=None, encoding='utf-8-sig', mode='a')
+    else:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfrommagyarnemzet' + getKeyword + '.csv', index=False, encoding='utf-8-sig', mode='a')
 
 
 driver.quit()

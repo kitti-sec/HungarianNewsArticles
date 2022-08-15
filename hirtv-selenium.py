@@ -27,10 +27,7 @@ driver.implicitly_wait(3)
 #  20cikk van egy oldalon
 # TODO: DUPKLIKACIOK MIKOR GYORSAN LEMENT. TOBBSZOR MENNT LE SOROKAT
 
-saveHeadlines = []
-saveArticleText = []
-saveLeadArticle = []
-saveArticleDate = []
+
 webPageName = 'Hir TV'
 pageIndex = 51
 
@@ -80,9 +77,16 @@ while pageIndex <= numberOfPages:
             continue
         
     pageIndex+= 1
-    dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
-    df= pd.DataFrame(dict)
-    df.to_csv('articlesfromhirtv.csv', mode='a', index=False, header=None, encoding='utf-8-sig')
+    file_exists = os.path.exists('articlesfromhirtv.csv')
+    if file_exists:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfromhirtv.csv', mode='a', index=False, header=None, encoding='utf-8-sig')
+    else:
+        dict = {'Title':saveHeadlines, 'Lead text': saveLeadArticle, 'Text':saveArticleText, 'Date':saveArticleDate, 'News site': webPageName, 'Keyword': getKeyword}
+        df= pd.DataFrame(dict)
+        df.to_csv('articlesfromhirtv.csv', mode='a', index=False, encoding='utf-8-sig')
+
     
 driver.quit()
 
