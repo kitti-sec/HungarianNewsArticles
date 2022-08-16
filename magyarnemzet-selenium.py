@@ -10,14 +10,16 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 
 getLink = input("Type in the Magyar Nemzet link without the current_page count number: ")
-numberOfPages = int(input("How many pages would you like to collect? "))
+pageIndex = int(input('From (page) '))
+numberOfPages = int(input("To (page) "))
 getKeyword = input("What keyword did you search for? ")
+
 driver = webdriver.Chrome(executable_path='C:/Users/shiro/Downloads/chromedriver_win32/chromedriver')
 
 driver.get(getLink)
 
 webPageName = 'Magyar Nemzet'
-pageIndex = 182
+# pageIndex = 440
 
 driver.implicitly_wait(3)
 driver.find_element(By.CSS_SELECTOR, "body > div.fc-consent-root > div.fc-dialog-container > div.fc-dialog.fc-choice-dialog > div.fc-footer-buttons-container > div.fc-footer-buttons > button.fc-button.fc-cta-consent.fc-primary-button").click()
@@ -52,8 +54,8 @@ while pageIndex <= numberOfPages:
 
             # /// Add together ydifferent sections to one article ///
             articleTextList = driver.find_elements(By.TAG_NAME, 'app-article-text')
+            articleTextCombined = ''
             for i in articleTextList:
-                articleTextCombined = ''
                 articleTextCombined = articleTextCombined + i.text
             saveArticleText.append(articleTextCombined)
 
